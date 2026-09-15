@@ -225,5 +225,5 @@ cat <<EOF
     docker exec -it ${CONTAINER_NAME} bash
     docker stop  ${CONTAINER_NAME}     # 停止
     docker start ${CONTAINER_NAME}     # 再次启动
-    sudo bash $0 --reset               # 销毁重建（恢复初始数据）
+    bash $0 --reset               # 销毁重建（恢复初始数据）
 EOF

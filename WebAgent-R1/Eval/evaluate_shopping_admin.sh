@@ -5,23 +5,33 @@
 # 当前模型：llama.cpp 部署的 Llama-3.1-8B-Instruct
 #           http://219.222.20.79:31313/v1
 #
-# 它把三件原本分散的事串起来：
+# 它把四件原本分散的事串起来：
 #   1. 任务筛选    scripts/filter_tasks_by_site.py    ← 挑出 shopping_admin 任务并重新编号
 #   2. 模型配置    下面的"模型配置区"                ← evaluate.sh 里那一堆参数
-#   3. 结果计分    scripts/score_subset.py            ← score.py 写死了 165，子集算不对
+#   3. 登录验证    scripts/check_login.py            ← auto_login 不校验登录是否真成功
+#   4. 结果计分    scripts/score_subset.py            ← score.py 写死了 165，子集算不对
+#
+# 关于登录（重要）:
+#   让 agent 带着登录态跑的是 run.py 自己 —— 它在每个任务前会重新调用
+#   auto_login.py（写进临时目录）并改写该任务的 storage_state。
+#   任务 JSON 里的 ./.auth/shopping_admin_state.json 只被用来取文件名推导站点组合，
+#   内容从不读取。本脚本的 REFRESH_AUTH 是在**跑批量之前**先验证一次登录能不能成功，
+#   因为 auto_login.py 的 --site_list 分支跳过了有效性校验，
+#   而 35 个任务里有 14 个（program_html / url_match）没有登录态就会静默得 0 分。
 #
 # 用法:
 #   bash evaluate_shopping_admin.sh              # 跑全部未完成的 shopping_admin 任务
 #   LIMIT=3 bash evaluate_shopping_admin.sh      # 先跑 3 条试水
 #   PARALLEL=2 bash evaluate_shopping_admin.sh   # 2 个进程并行
-#   REFRESH_AUTH=0 bash evaluate_shopping_admin.sh   # 跳过刷新登录 cookie
+#   REFRESH_AUTH=0 bash evaluate_shopping_admin.sh   # 跳过登录刷新与验证
 #   bash evaluate_shopping_admin.sh --score-only # 只重新计分，不跑任务
 #
 # 跑完再跑一次即可续跑（自动跳过已完成任务）。
 #
 # 前置条件:
 #   - shopping_admin 容器已起（WebArena-Env-Setup/start_shopping_admin.sh）
-#   - conda 环境已激活（README 里的 webagent-r1），或把下面的 PYTHON 指到那个解释器
+#   - conda 环境已激活（README 里的 webagent-r1），且 PYTHON 与 PATH 里的 python 一致
+#     （run.py 的登录子进程硬编码了 "python"，脚本会检查这一点）
 #   - 评测机和容器在同一台机器（任务 JSON 里写死 localhost:8083）
 # ==============================================================================
 
@@ -124,6 +134,24 @@ if [[ $SCORE_ONLY -eq 1 ]]; then
 fi
 
 # ---------- 0. 前置检查 ----------
+# run.py:405 里逐任务重新登录的子进程**硬编码**了 "python"（不是 sys.executable）。
+# 所以 $PYTHON 和 PATH 里的 python 必须是同一个环境，否则登录子进程会用错解释器，
+# 表现为任务报错跳过（error.txt 里能看到 assert 失败）。
+if [[ "$PYTHON" != "python" ]]; then
+  p_target="$("$PYTHON" -c 'import sys; print(sys.executable)' 2>/dev/null || true)"
+  p_path="$(command -v python 2>/dev/null || true)"
+  if [[ -z "$p_path" ]]; then
+    warn "PATH 里没有 python，但 run.py 的登录子进程硬编码了 \"python\"，登录会失败"
+    warn "  建议先 conda activate，再把 PYTHON 设回 python"
+  elif [[ -n "$p_target" && "$p_target" != "$p_path" ]]; then
+    die "PYTHON 与 PATH 里的 python 不是同一个环境：
+    PYTHON = $p_target
+    python = $p_path
+  run.py:405 的登录子进程用的是裸 \"python\"，两者不一致会让逐任务登录失败。
+  解决：先 conda activate <环境>，然后把脚本里的 PYTHON 设回 "python""
+  fi
+fi
+
 say "检查站点可达性: $SHOPPING_ADMIN"
 code="$(curl -s -o /dev/null -m 8 -w '%{http_code}' "$SHOPPING_ADMIN" 2>/dev/null || true)"
 [[ -n "$code" ]] || code="000"
@@ -171,13 +199,32 @@ fi
 say "本次待跑 $total 条任务"
 
 # ---------- 3. 刷新登录 cookie ----------
+# 说明：真正让 agent 带着登录态跑的是 run.py 自己 —— 它在每个任务前会调用
+#   subprocess.run(["python", "browser_env/auto_login.py", "--auth_folder",
+#                   <临时目录>, "--site_list", "shopping_admin"])
+# 重新登录一次，并把该任务的 storage_state 指向临时目录里的新 cookie。
+# 任务 JSON 里那个 ./.auth/shopping_admin_state.json 其实**只被用来取文件名**
+# 推导站点组合，内容从不读取。所以这一步的价值是提前验证"登录能不能成功"，
+# 而不是提供登录态本身。
 if [[ "$REFRESH_AUTH" == "1" ]]; then
   say "刷新 $SITE 登录 cookie…"
   mkdir -p .auth
   if "$PYTHON" browser_env/auto_login.py --site_list "$SITE" --auth_folder ./.auth; then
     say "cookie 已写入 ./.auth/${SITE}_state.json"
+
+    # auto_login.py 走 --site_list 分支时**跳过** is_expired 校验，
+    # 所以脚本跑完不代表真登录上了。这里实际打开一次后台页面确认。
+    say "验证登录是否真的有效…"
+    if "$PYTHON" scripts/check_login.py --state-file "./.auth/${SITE}_state.json"; then
+      say "登录有效 ✅"
+    else
+      die "登录无效！这不只是个警告 —— 35 个任务里有 14 个（program_html / url_match）
+  需要已登录的浏览器上下文，评测器会重新 page.goto() 后台页面取 DOM，
+  没登录会被 Magento 重定向到登录页，locator 查不到元素 → 这些任务静默得 0 分。
+  确认无误后想跳过这个检查: REFRESH_AUTH=0 bash $0"
+    fi
   else
-    warn "cookie 刷新失败，但 run.py 会按任务重新登录，通常不影响；继续"
+    warn "cookie 刷新失败。run.py 会按任务自己重新登录，但建议先解决上面的报错"
   fi
 fi
 

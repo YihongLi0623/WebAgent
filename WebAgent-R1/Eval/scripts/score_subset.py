@@ -99,7 +99,8 @@ def main() -> int:
     if not_run:
         print()
         print(f"未跑的 task_id : {not_run}")
-        print("  续跑: bash evaluate_shopping_admin.sh（脚本会自动只跑未完成的任务）")
+        print("  说明: 评测脚本按「每次完整跑一遍」设计，不会跳过已完成任务。")
+        print("        出现未跑一般是该任务报错被跳过（看 result_dir/error.txt），或用了 LIMIT。")
 
     return 0
 

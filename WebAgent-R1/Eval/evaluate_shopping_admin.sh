@@ -19,14 +19,21 @@
 #   因为 auto_login.py 的 --site_list 分支跳过了有效性校验，
 #   而 35 个任务里有 14 个（program_html / url_match）没有登录态就会静默得 0 分。
 #
+# 关于「每次跑全部 35 条」:
+#   不做断点续跑，每次运行都完整跑一遍。这不是只删掉本脚本的过滤就行 ——
+#   run.py:671 自己会调 get_unfinished() 跳过它认为已完成的任务，判据是
+#   「文件名序号」查 actions/{序号}.json + render_*.html 反推。我们的目录文件名是
+#   0..34 而内部 task_id 是 0,2,8,13,17... 两者不对齐，这套判据会看错记录、
+#   随机跳过十来个任务。所以脚本在开跑前把结果目录整体改名备份（FRESH_RUN=1），
+#   让 run.py 看到空目录 → 35 条全跑。
+#
 # 用法:
-#   bash evaluate_shopping_admin.sh              # 跑全部未完成的 shopping_admin 任务
-#   LIMIT=3 bash evaluate_shopping_admin.sh      # 先跑 3 条试水
+#   bash evaluate_shopping_admin.sh              # 完整跑 35 条（每次都是全量）
+#   LIMIT=3 bash evaluate_shopping_admin.sh      # 只跑前 3 条试水
 #   PARALLEL=2 bash evaluate_shopping_admin.sh   # 2 个进程并行
+#   FRESH_RUN=0 bash evaluate_shopping_admin.sh  # 保留上次结果（会被 run.py 跳过部分任务）
 #   REFRESH_AUTH=0 bash evaluate_shopping_admin.sh   # 跳过登录刷新与验证
 #   bash evaluate_shopping_admin.sh --score-only # 只重新计分，不跑任务
-#
-# 跑完再跑一次即可续跑（自动跳过已完成任务）。
 #
 # 前置条件:
 #   - shopping_admin 容器已起（WebArena-Env-Setup/start_shopping_admin.sh）
@@ -85,13 +92,15 @@ STOP_TOKEN="<|eot_id|>"
 
 # ============================ 运行配置区 =====================================
 TASK_SRC_DIR="config_files/wa/test_webarena_lite"                    # 165 条全集
-TASK_DIR="config_files/wa/test_webarena_lite_shopping_admin"         # 筛出来的目标集
-RUN_DIR="config_files/_running_shopping_admin"                       # 本次待跑的子集
+TASK_DIR="config_files/wa/test_webarena_lite_shopping_admin"         # 筛出来的目标集（0..34.json 连续编号，可直接给 run.py）
 RESULT_DIR="eval_results/shopping_admin_llama3.1-8b"
 
-LIMIT=0            # 只跑前 N 条（0=全部），试水用
-PARALLEL=1         # 并发进程数；llama.cpp 单实例建议 1~2，别把它打爆
-REFRESH_AUTH=1     # 1=先刷新 shopping_admin 登录 cookie
+LIMIT=0            # 只跑前 N 条（0=全部 35 条），试水用
+PARALLEL=1         # 并发 run.py 进程数。1=串行；4=把 35 条切成 4 段同时跑。
+                   # 命令行覆盖：PARALLEL=4 bash evaluate_shopping_admin.sh
+                   # 参考：单实例 llama.cpp + 每进程一个 Chromium，4 左右比较稳；
+                   #       调太大主要卡在模型推理排队和内存上。
+REFRESH_AUTH=1     # 1=先刷新并验证 shopping_admin 登录
 MAX_STEPS=30
 TEMPERATURE=1.0
 MAX_TOKENS=2048
@@ -100,6 +109,14 @@ VIEWPORT_WIDTH=1280
 VIEWPORT_HEIGHT=720
 ACTION_SET_TAG="webrl_id"
 OBSERVATION_TYPE="webrl"
+
+# 每次跑都完整跑一遍全部任务，不复用上次结果。
+# 为什么必须要这个开关：run.py:671 自己会调 get_unfinished() 过滤任务，而它用
+# **文件名序号** 去查 actions/{序号}.json、用 render_*.html 反推已跑过的 id。
+# 这套判断对重新编号过的目录本来就不成立（文件名是 0..34，内部 task_id 是 0,2,8,13...），
+# 结果就是第二次跑会莫名其妙跳过十来个任务、而且跳过的判据还看错了记录。
+# 所以这里在开跑前把上次的结果目录整体挪走，让 run.py 看到一个空目录 → 35 条全跑。
+FRESH_RUN=1        # 1=把旧结果改名备份后重跑；0=保留旧结果（run.py 可能跳过部分任务）
 
 # =============================================================================
 
@@ -181,22 +198,24 @@ else
   say "复用已有任务目录 $TASK_DIR（$n 条）"
 fi
 
-# ---------- 2. 挑出未完成的任务（断点续跑） ----------
-# run.py 自带的续跑判断用文件名序号查 actions/，对重新编号过的目录会失效，
-# 所以这里自己按内部 task_id 过滤，生成一个新的连续编号目录。
-say "生成本次待跑子集（自动跳过已完成）…"
-"$PYTHON" scripts/filter_tasks_by_site.py \
-  --src "$TASK_DIR" --dst "$RUN_DIR" --site "$SITE" \
-  --exclude-done "$RESULT_DIR" --limit "$LIMIT" --overwrite \
-  --host "$PUBLIC_HOSTNAME"
-
-total=$(ls -1 "$RUN_DIR"/*.json 2>/dev/null | wc -l || echo 0)
-if [[ "$total" -eq 0 ]]; then
-  say "没有待跑的任务了，直接计分："
-  "$PYTHON" scripts/score_subset.py --result_dir "$RESULT_DIR" --task_dir "$TASK_DIR" --show-failed
-  exit $?
+# ---------- 2. 清空上次结果，确保 35 条全跑 ----------
+# 见上面 FRESH_RUN 的说明：run.py 自己会跳过它认为已完成的任务，
+# 而它的判据（文件名序号 + render_*.html）在我们的重新编号目录上不成立，
+# 所以每次跑之前把结果目录挪走，让它看到空目录 → 全部任务都会跑。
+if [[ "$FRESH_RUN" == "1" && -d "$RESULT_DIR" ]]; then
+  backup="${RESULT_DIR}.bak.$(date +%Y%m%d-%H%M%S)"
+  say "备份上次结果: $RESULT_DIR -> $backup"
+  mv "$RESULT_DIR" "$backup"
+  warn "旧结果已备份到 $backup（不需要就自己删）"
 fi
-say "本次待跑 $total 条任务"
+
+total=$(ls -1 "$TASK_DIR"/*.json 2>/dev/null | wc -l || echo 0)
+[[ "$total" -gt 0 ]] || die "任务目录里没有任务: $TASK_DIR"
+if [[ "$LIMIT" -gt 0 && "$LIMIT" -lt "$total" ]]; then
+  warn "LIMIT=$LIMIT，本次只跑前 $LIMIT 条（不是完整 35 条）"
+  total="$LIMIT"
+fi
+say "本次将跑 $total 条任务（每次都是完整跑，不跳过任何一条）"
 
 # ---------- 3. 刷新登录 cookie ----------
 # 说明：真正让 agent 带着登录态跑的是 run.py 自己 —— 它在每个任务前会调用
@@ -237,7 +256,7 @@ run_chunk() {
     --instruction_path "$INSTRUCTION_PATH" \
     --test_start_idx "$start" \
     --test_end_idx "$end" \
-    --test_config_base_dir "$RUN_DIR" \
+    --test_config_base_dir "$TASK_DIR" \
     --result_dir "$RESULT_DIR" \
     --provider "$PROVIDER" \
     --model "$MODEL" \
@@ -262,10 +281,24 @@ else
   say "模型: provider=$PROVIDER model=$MODEL mode=$MODE  → $PLANNER_IP"
 fi
 say "任务: $TASK_DIR / 本次 $total 条 / 并发 $PARALLEL"
+if [[ "$PARALLEL" -gt "$total" ]]; then
+  warn "PARALLEL=$PARALLEL 大于任务数 $total，实际只会起 $total 个进程（每个跑 1 条）"
+fi
+say "开始时间: $(date '+%Y-%m-%d %H:%M:%S')"
+START_TS=$SECONDS
 
+# 并行方式：把 [0, total) 切成 PARALLEL 段，每段一个 run.py 进程跑
+#   python run.py --test_start_idx <段起> --test_end_idx <段止>
+# 写的是同一个 result_dir，但每个任务的结果文件是 actions/<内部task_id>.json，
+# 各段任务不重叠，所以互不干扰。
 if [[ "$PARALLEL" -le 1 ]]; then
   run_chunk 0 "$total"
 else
+  # 注意 1：多个 run.py 进程共用一个 result_dir。它们在启动时各自会调一次
+  # get_unfinished()（在 import + prepare 之后），此刻目录还是空的，所以都能拿到
+  # 完整的任务列表。只要不在跑的过程中人为往 result_dir 塞文件就不会误跳。
+  # 注意 2：debug_info/ 是进程共用的固定路径（相对 cwd），并行时各进程会互相覆盖，
+  # 只影响调试文件，不影响评分。
   chunk=$(( (total + PARALLEL - 1) / PARALLEL ))
   pids=()
   for ((i = 0; i < PARALLEL; i++)); do
@@ -273,7 +306,7 @@ else
     if [[ $s -ge $total ]]; then break; fi
     e=$((s + chunk))
     if [[ $e -gt $total ]]; then e=$total; fi
-    say "  进程 $i: 任务 [$s, $e)"
+    say "  进程 $i: 任务 [$s, $e)  共 $((e - s)) 条  → logs/chunk_${i}.log"
     run_chunk "$s" "$e" >"logs/chunk_${i}.log" 2>&1 &
     pids+=($!)
   done
@@ -281,8 +314,11 @@ else
   for pid in "${pids[@]}"; do
     wait "$pid" || status=1
   done
-  [[ $status -eq 0 ]] || warn "有进程非正常退出，看 logs/chunk_*.log；再跑一次本脚本会自动续跑"
+  [[ $status -eq 0 ]] || warn "有进程非正常退出，失败的任务看 logs/chunk_*.log 和 $RESULT_DIR/error.txt"
 fi
+
+say "结束时间: $(date '+%Y-%m-%d %H:%M:%S')   总耗时 $((SECONDS - START_TS)) 秒"
+say "（想提速就把 PARALLEL 调大：PARALLEL=4 bash $(basename "$0")）"
 
 # ---------- 5. 计分 ----------
 echo
@@ -296,4 +332,5 @@ cat <<EOF
   单条重跑 : $PYTHON run.py --test_config_base_dir $TASK_DIR \\
                --test_start_idx <序号> --test_end_idx <序号+1> ...（其余参数见本脚本）
   纯计分   : bash $(basename "$0") --score-only
+  完整重跑 : bash $(basename "$0")   （每次都是全量 35 条，旧结果自动备份）
 EOF

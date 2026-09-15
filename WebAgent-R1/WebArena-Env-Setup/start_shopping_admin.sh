@@ -14,10 +14,10 @@ set -euo pipefail
 
 # -------------------------------- 配置区 -------------------------------------
 CONTAINER_NAME="shopping_admin"
-IMAGE_NAME="shopping_admin_final_0719"
+IMAGE_NAME="am1n3e/webarena-verified-shopping_admin"
 
 # tar 包绝对路径：改成你自己的位置（Windows Git Bash 用 /d/xxx 这种写法）
-TAR_FILE="${TAR_FILE:-/d/images/shopping_admin_final_0719.tar}"
+TAR_FILE="${TAR_FILE:/mnt/mess/liyihong/webarena_tar/webarena-shopping-admin.tar}"
 
 PUBLIC_HOSTNAME="10.154.22.10"      # 与 00_vars.sh 保持一致
 SHOPPING_ADMIN_PORT=8083

@@ -1,0 +1,1211 @@
+[
+  {
+    "sites": [
+      "shopping_admin"
+    ],
+    "task_id": 0,
+    "require_login": true,
+    "storage_state": "./.auth/shopping_admin_state.json",
+    "start_url": "http://localhost:8083/admin",
+    "geolocation": null,
+    "intent_template": "What are the top-{{n}} best-selling product in {{period}}",
+    "instantiation_dict": {
+      "n": "3",
+      "period": "Jan 2023"
+    },
+    "intent": "What are the top-3 best-selling product in Jan 2023",
+    "require_reset": false,
+    "eval": {
+      "eval_types": [
+        "string_match"
+      ],
+      "reference_answers": {
+        "must_include": [
+          "Impulse Duffle",
+          "Overnight Duffle",
+          "Hawkeye Yoga Short-32-Blue"
+        ]
+      },
+      "reference_url": "",
+      "program_html": [],
+      "string_note": "",
+      "reference_answer_raw_annotation": "Impulse Duffle, Overnight Duffle, Hawkeye Yoga Short-32-Blue"
+    },
+    "intent_template_id": 279,
+    "old_task_id": 4
+  },
+  {
+    "sites": [
+      "shopping_admin"
+    ],
+    "task_id": 2,
+    "require_login": true,
+    "storage_state": "./.auth/shopping_admin_state.json",
+    "start_url": "http://localhost:8083/admin",
+    "geolocation": null,
+    "intent_template": "Tell me the the number of reviews that our store received by far that mention term \"{{term}}\"",
+    "instantiation_dict": {
+      "term": "best"
+    },
+    "intent": "Tell me the the number of reviews that our store received by far that mention term \"best\"",
+    "require_reset": false,
+    "eval": {
+      "eval_types": [
+        "string_match"
+      ],
+      "reference_answers": {
+        "must_include": [
+          "2"
+        ]
+      },
+      "reference_url": "",
+      "program_html": [],
+      "string_note": "",
+      "reference_answer_raw_annotation": "2"
+    },
+    "intent_template_id": 288,
+    "old_task_id": 15
+  },
+  {
+    "sites": [
+      "shopping_admin"
+    ],
+    "task_id": 8,
+    "require_login": true,
+    "storage_state": "./.auth/shopping_admin_state.json",
+    "start_url": "http://localhost:8083/admin",
+    "geolocation": null,
+    "intent_template": "List the top {{n}} search terms in my store",
+    "instantiation_dict": {
+      "n": "3"
+    },
+    "intent": "List the top 3 search terms in my store",
+    "require_reset": false,
+    "eval": {
+      "eval_types": [
+        "string_match"
+      ],
+      "reference_answers": {
+        "must_include": [
+          "hollister",
+          "Joust Bag",
+          "nike"
+        ]
+      },
+      "reference_url": "",
+      "program_html": [],
+      "string_note": "",
+      "reference_answer_raw_annotation": "hollister, Joust Bag, nike"
+    },
+    "intent_template_id": 285,
+    "old_task_id": 43
+  },
+  {
+    "sites": [
+      "shopping_admin"
+    ],
+    "task_id": 13,
+    "require_login": true,
+    "storage_state": "./.auth/shopping_admin_state.json",
+    "start_url": "http://localhost:8083/admin",
+    "geolocation": null,
+    "intent_template": "Which customer has completed the {{quantifier}} number of orders in the entire history?",
+    "instantiation_dict": {
+      "quantifier": "fifth most"
+    },
+    "intent": "Which customer has completed the fifth most number of orders in the entire history?",
+    "require_reset": false,
+    "eval": {
+      "eval_types": [
+        "string_match"
+      ],
+      "reference_answers": {
+        "must_include": [
+          "Matt Baker"
+        ]
+      },
+      "reference_url": "",
+      "program_html": [],
+      "string_note": "",
+      "reference_answer_raw_annotation": "Matt Baker"
+    },
+    "intent_template_id": 276,
+    "old_task_id": 65
+  },
+  {
+    "sites": [
+      "shopping_admin"
+    ],
+    "task_id": 17,
+    "require_login": true,
+    "storage_state": "./.auth/shopping_admin_state.json",
+    "start_url": "http://localhost:8083/admin",
+    "geolocation": null,
+    "intent_template": "What is the total count of {{status}} reviews amongst all the reviews?",
+    "instantiation_dict": {
+      "status": "Pending"
+    },
+    "intent": "What is the total count of Pending reviews amongst all the reviews?",
+    "require_reset": false,
+    "eval": {
+      "eval_types": [
+        "string_match"
+      ],
+      "reference_answers": {
+        "must_include": [
+          "5"
+        ]
+      },
+      "reference_url": "",
+      "program_html": [],
+      "string_note": "",
+      "reference_answer_raw_annotation": "5"
+    },
+    "intent_template_id": 277,
+    "old_task_id": 77
+  },
+  {
+    "sites": [
+      "shopping_admin"
+    ],
+    "task_id": 21,
+    "require_login": true,
+    "storage_state": "./.auth/shopping_admin_state.json",
+    "start_url": "http://localhost:8083/admin",
+    "geolocation": null,
+    "intent_template": "Telll me the grand total of invoice {{id}}.",
+    "instantiation_dict": {
+      "id": "000000002"
+    },
+    "intent": "Telll me the grand total of invoice 000000002.",
+    "require_reset": false,
+    "eval": {
+      "eval_types": [
+        "string_match"
+      ],
+      "reference_answers": {
+        "must_include": [
+          "39.64"
+        ]
+      },
+      "reference_url": "",
+      "program_html": [],
+      "string_note": "",
+      "reference_answer_raw_annotation": "$39.64"
+    },
+    "intent_template_id": 274,
+    "old_task_id": 95
+  },
+  {
+    "sites": [
+      "shopping_admin"
+    ],
+    "task_id": 26,
+    "require_login": true,
+    "storage_state": "./.auth/shopping_admin_state.json",
+    "start_url": "http://localhost:8083/admin",
+    "geolocation": null,
+    "intent_template": "Presents the monthly count of successful orders {{period}} in MM:COUNT format",
+    "instantiation_dict": {
+      "period": "from Jan to December 2022"
+    },
+    "intent": "Presents the monthly count of successful orders from Jan to December 2022 in MM:COUNT format",
+    "require_reset": false,
+    "eval": {
+      "eval_types": [
+        "string_match"
+      ],
+      "reference_answers": {
+        "fuzzy_match": [
+          "01:11",
+          "02:16",
+          "03:14",
+          "04:8",
+          "05:8",
+          "06:13",
+          "07:9",
+          "08:8",
+          "09:10",
+          "10:4",
+          "11:5",
+          "12:10"
+        ]
+      },
+      "reference_url": "",
+      "program_html": [],
+      "string_note": "",
+      "reference_answer_raw_annotation": "01:11 02:16 03:14 04:8 05:8 06:13 07:9 08:8 09:10 10:4 11:5 12:10"
+    },
+    "intent_template_id": 270,
+    "old_task_id": 109
+  },
+  {
+    "sites": [
+      "shopping_admin"
+    ],
+    "task_id": 27,
+    "require_login": true,
+    "storage_state": "./.auth/shopping_admin_state.json",
+    "start_url": "http://localhost:8083/admin",
+    "geolocation": null,
+    "intent_template": "Show me the name of the customers who have expressed dissatisfaction with {{product}}",
+    "instantiation_dict": {
+      "product": "Chloe tank"
+    },
+    "intent": "Show me the name of the customers who have expressed dissatisfaction with Chloe tank",
+    "require_reset": false,
+    "eval": {
+      "eval_types": [
+        "string_match"
+      ],
+      "reference_answers": {
+        "fuzzy_match": [
+          "N/A"
+        ]
+      },
+      "reference_url": "",
+      "program_html": [],
+      "string_note": "There is no negative review for Chloe tank",
+      "reference_answer_raw_annotation": ""
+    },
+    "intent_template_id": 245,
+    "old_task_id": 115
+  },
+  {
+    "sites": [
+      "shopping_admin"
+    ],
+    "task_id": 30,
+    "require_login": true,
+    "storage_state": "./.auth/shopping_admin_state.json",
+    "start_url": "http://localhost:8083/admin",
+    "geolocation": null,
+    "intent_template": "Tell me the reasons why customers like {{product}}",
+    "instantiation_dict": {
+      "product": "Circe's products"
+    },
+    "intent": "Tell me the reasons why customers like Circe's products",
+    "require_reset": false,
+    "eval": {
+      "eval_types": [
+        "string_match"
+      ],
+      "reference_answers": {
+        "fuzzy_match": [
+          "Warm and comfortable. True to size."
+        ]
+      },
+      "reference_url": "",
+      "program_html": [],
+      "string_note": "",
+      "reference_answer_raw_annotation": "Warm and comfortable. True to size."
+    },
+    "intent_template_id": 250,
+    "old_task_id": 123
+  },
+  {
+    "sites": [
+      "shopping_admin"
+    ],
+    "task_id": 32,
+    "require_login": true,
+    "storage_state": "./.auth/shopping_admin_state.json",
+    "start_url": "http://localhost:8083/admin",
+    "geolocation": null,
+    "intent_template": "What brands appear most frequently among the top search terms?",
+    "instantiation_dict": {},
+    "intent": "What brands appear most frequently among the top search terms?",
+    "require_reset": false,
+    "eval": {
+      "eval_types": [
+        "string_match"
+      ],
+      "reference_answers": {
+        "must_include": [
+          "Hollister"
+        ]
+      },
+      "reference_url": "",
+      "program_html": [],
+      "string_note": "",
+      "reference_answer_raw_annotation": "Hollister"
+    },
+    "intent_template_id": 1001,
+    "old_task_id": 127
+  },
+  {
+    "sites": [
+      "shopping_admin"
+    ],
+    "task_id": 33,
+    "require_login": true,
+    "storage_state": "./.auth/shopping_admin_state.json",
+    "start_url": "http://localhost:8083/admin",
+    "geolocation": null,
+    "intent_template": "What's the total number of items sold in the most recent {{k}} orders?",
+    "instantiation_dict": {
+      "k": "7"
+    },
+    "intent": "What's the total number of items sold in the most recent 7 orders?",
+    "require_reset": false,
+    "eval": {
+      "eval_types": [
+        "string_match"
+      ],
+      "reference_answers": {
+        "must_include": [
+          "25"
+        ]
+      },
+      "reference_url": "",
+      "program_html": [],
+      "string_note": "",
+      "reference_answer_raw_annotation": "25"
+    },
+    "intent_template_id": 1002,
+    "old_task_id": 131
+  },
+  {
+    "sites": [
+      "shopping_admin"
+    ],
+    "task_id": 40,
+    "require_login": true,
+    "storage_state": "./.auth/shopping_admin_state.json",
+    "start_url": "http://localhost:8083/admin",
+    "geolocation": null,
+    "intent_template": "Show all customers",
+    "instantiation_dict": {},
+    "intent": "Show all customers",
+    "require_reset": false,
+    "eval": {
+      "eval_types": [
+        "url_match"
+      ],
+      "reference_answers": null,
+      "reference_url": "http://localhost:8083/admin/customer/index/",
+      "program_html": [],
+      "url_note": "GOLD in PRED"
+    },
+    "intent_template_id": 255,
+    "old_task_id": 157
+  },
+  {
+    "sites": [
+      "shopping_admin"
+    ],
+    "task_id": 47,
+    "require_login": true,
+    "storage_state": "./.auth/shopping_admin_state.json",
+    "start_url": "http://localhost:8083/admin",
+    "geolocation": null,
+    "intent_template": "Compare the payment difference of the last {{N}} {{status_1}} orders and {{status_2}} orders",
+    "instantiation_dict": {
+      "status_1": "cancelled",
+      "status_2": "completed",
+      "N": "4"
+    },
+    "intent": "Compare the payment difference of the last 4 cancelled orders and completed orders",
+    "require_reset": false,
+    "eval": {
+      "eval_types": [
+        "string_match"
+      ],
+      "reference_answers": {
+        "must_include": [
+          "194.25"
+        ]
+      },
+      "reference_url": "",
+      "program_html": [],
+      "string_note": "",
+      "reference_answer_raw_annotation": "194.25"
+    },
+    "intent_template_id": 367,
+    "old_task_id": 196
+  },
+  {
+    "sites": [
+      "shopping_admin"
+    ],
+    "task_id": 48,
+    "require_login": true,
+    "storage_state": "./.auth/shopping_admin_state.json",
+    "start_url": "http://localhost:8083/admin",
+    "geolocation": null,
+    "intent_template": "Get the {{attribute}} of the {{status}} order",
+    "instantiation_dict": {
+      "attribute": "date",
+      "status": "most recent canlled"
+    },
+    "intent": "Get the date of the most recent canlled order",
+    "require_reset": false,
+    "eval": {
+      "eval_types": [
+        "string_match"
+      ],
+      "reference_answers": {
+        "fuzzy_match": [
+          "May 23 2023"
+        ]
+      },
+      "reference_url": "",
+      "program_html": [],
+      "string_note": "",
+      "reference_answer_raw_annotation": "May 23, 2023"
+    },
+    "intent_template_id": 366,
+    "old_task_id": 202
+  },
+  {
+    "sites": [
+      "shopping_admin"
+    ],
+    "task_id": 50,
+    "require_login": true,
+    "storage_state": "./.auth/shopping_admin_state.json",
+    "start_url": "http://localhost:8083/admin",
+    "geolocation": null,
+    "intent_template": "Find the customer name and email with phone number {{PhoneNum}}",
+    "instantiation_dict": {
+      "PhoneNum": "8015551212"
+    },
+    "intent": "Find the customer name and email with phone number 8015551212",
+    "require_reset": false,
+    "eval": {
+      "eval_types": [
+        "string_match"
+      ],
+      "reference_answers": {
+        "must_include": [
+          "Sean Miller",
+          "sean.miller@gmail.com"
+        ]
+      },
+      "reference_url": "",
+      "program_html": [],
+      "string_note": "",
+      "reference_answer_raw_annotation": "Sean Miller, sean.miller@gmail.com"
+    },
+    "intent_template_id": 364,
+    "old_task_id": 211
+  },
+  {
+    "sites": [
+      "shopping_admin"
+    ],
+    "task_id": 51,
+    "require_login": true,
+    "storage_state": "./.auth/shopping_admin_state.json",
+    "start_url": "http://localhost:8083/admin",
+    "geolocation": null,
+    "intent_template": "What are the key aspects that the customers don't like about {{product}}",
+    "instantiation_dict": {
+      "product": "Circe ice fleece"
+    },
+    "intent": "What are the key aspects that the customers don't like about Circe ice fleece",
+    "require_reset": false,
+    "eval": {
+      "eval_types": [
+        "string_match"
+      ],
+      "reference_answers": {
+        "fuzzy_match": [
+          "N/A"
+        ]
+      },
+      "reference_url": "",
+      "program_html": [],
+      "string_note": "",
+      "reference_answer_raw_annotation": "N/A"
+    },
+    "intent_template_id": 249,
+    "old_task_id": 215
+  },
+  {
+    "sites": [
+      "shopping_admin"
+    ],
+    "task_id": 59,
+    "require_login": true,
+    "storage_state": "./.auth/shopping_admin_state.json",
+    "start_url": "http://localhost:8083/admin",
+    "geolocation": null,
+    "intent_template": "Show me the {{information}} of the customer who is the most unhappy with {{product}}",
+    "instantiation_dict": {
+      "information": "email address",
+      "product": "the style of Zoe products"
+    },
+    "intent": "Show me the email address of the customer who is the most unhappy with the style of Zoe products",
+    "require_reset": false,
+    "eval": {
+      "eval_types": [
+        "string_match"
+      ],
+      "reference_answers": {
+        "fuzzy_match": [
+          "N/A"
+        ]
+      },
+      "reference_url": "Valorie doesn't have a email in the system",
+      "program_html": [],
+      "string_note": "There is no negative review for Zoe products",
+      "reference_answer_raw_annotation": "N/A"
+    },
+    "intent_template_id": 244,
+    "old_task_id": 247
+  },
+  {
+    "sites": [
+      "shopping_admin"
+    ],
+    "task_id": 70,
+    "require_login": true,
+    "storage_state": "./.auth/shopping_admin_state.json",
+    "start_url": "http://localhost:8083/admin",
+    "geolocation": null,
+    "intent_template": "Tell me the {{attribute}} of the customer who has the most cancellations in the history",
+    "instantiation_dict": {
+      "attribute": "name"
+    },
+    "intent": "Tell me the name of the customer who has the most cancellations in the history",
+    "require_reset": false,
+    "eval": {
+      "eval_types": [
+        "string_match"
+      ],
+      "reference_answers": {
+        "must_include": [
+          "Samantha Jones"
+        ]
+      },
+      "reference_url": "",
+      "program_html": [],
+      "string_note": "",
+      "reference_answer_raw_annotation": "Samantha Jones"
+    },
+    "intent_template_id": 234,
+    "old_task_id": 288
+  },
+  {
+    "sites": [
+      "shopping_admin"
+    ],
+    "task_id": 80,
+    "require_login": true,
+    "storage_state": "./.auth/shopping_admin_state.json",
+    "start_url": "http://localhost:8083/admin",
+    "geolocation": null,
+    "intent_template": "How many reviews our shop received {{time}}?",
+    "instantiation_dict": {
+      "time": "in May 2023"
+    },
+    "intent": "How many reviews our shop received in May 2023?",
+    "require_reset": false,
+    "eval": {
+      "eval_types": [
+        "string_match"
+      ],
+      "reference_answers": {
+        "fuzzy_match": [
+          "0"
+        ]
+      },
+      "reference_url": "",
+      "program_html": [],
+      "string_note": "",
+      "reference_answer_raw_annotation": "0"
+    },
+    "intent_template_id": 248,
+    "old_task_id": 348
+  },
+  {
+    "sites": [
+      "shopping_admin"
+    ],
+    "task_id": 88,
+    "require_login": true,
+    "storage_state": "./.auth/shopping_admin_state.json",
+    "start_url": "http://localhost:8083/admin",
+    "geolocation": null,
+    "intent_template": "Preview the {{name}} theme for my shop",
+    "instantiation_dict": {
+      "name": "Magento Blank"
+    },
+    "intent": "Preview the Magento Blank theme for my shop",
+    "require_reset": false,
+    "eval": {
+      "eval_types": [
+        "url_match"
+      ],
+      "reference_answers": null,
+      "reference_url": "http://localhost:8083/admin/admin/system_design_theme/edit/id/1",
+      "program_html": [],
+      "url_note": "GOLD in PRED"
+    },
+    "intent_template_id": 266,
+    "old_task_id": 374
+  },
+  {
+    "sites": [
+      "shopping_admin"
+    ],
+    "task_id": 101,
+    "require_login": true,
+    "storage_state": "./.auth/shopping_admin_state.json",
+    "start_url": "http://localhost:8083/admin",
+    "geolocation": null,
+    "intent_template": "Mark all {{brand}} shirts on sale",
+    "instantiation_dict": {
+      "brand": "Hollister"
+    },
+    "intent": "Mark all Hollister shirts on sale",
+    "require_reset": false,
+    "eval": {
+      "eval_types": [
+        "program_html"
+      ],
+      "reference_answers": null,
+      "reference_url": "",
+      "program_html": [
+        {
+          "url": "http://localhost:8083/admin/catalog/product/edit/id/126/",
+          "locator": "document.querySelector('input[name=\"product[sale]\"]').value",
+          "required_contents": {
+            "exact_match": "1"
+          }
+        }
+      ]
+    },
+    "intent_template_id": 237,
+    "old_task_id": 423
+  },
+  {
+    "sites": [
+      "shopping_admin"
+    ],
+    "task_id": 106,
+    "require_login": true,
+    "storage_state": "./.auth/shopping_admin_state.json",
+    "start_url": "http://localhost:8083/admin",
+    "geolocation": null,
+    "intent_template": "Disable {{product}} from the site, they are facing some quality issues.",
+    "instantiation_dict": {
+      "product": "Ryker Tee Crew Neck"
+    },
+    "intent": "Disable Ryker Tee Crew Neck from the site, they are facing some quality issues.",
+    "require_reset": false,
+    "eval": {
+      "eval_types": [
+        "program_html"
+      ],
+      "reference_answers": null,
+      "reference_url": "",
+      "program_html": [
+        {
+          "url": "http://localhost:8083/admin/catalog/product/edit/id/478/",
+          "locator": "document.querySelector('[name=\"product[status]\"').value",
+          "required_contents": {
+            "exact_match": "2"
+          }
+        }
+      ]
+    },
+    "intent_template_id": 242,
+    "old_task_id": 454
+  },
+  {
+    "sites": [
+      "shopping_admin"
+    ],
+    "task_id": 107,
+    "require_login": true,
+    "storage_state": "./.auth/shopping_admin_state.json",
+    "start_url": "http://localhost:8083/admin/catalog/product/edit/id/1481/",
+    "geolocation": null,
+    "intent_template": "{{action}} the price of this product by {{amount}}",
+    "instantiation_dict": {
+      "amount": "$5",
+      "action": "Reduce"
+    },
+    "intent": "Reduce the price of this product by $5",
+    "require_reset": false,
+    "eval": {
+      "eval_types": [
+        "program_html"
+      ],
+      "reference_answers": null,
+      "reference_url": "",
+      "program_html": [
+        {
+          "url": "http://localhost:8083/admin/catalog/product/edit/id/1481/",
+          "locator": "document.querySelector('[name=\"product[price]\"').value",
+          "required_contents": {
+            "exact_match": "27.00"
+          }
+        }
+      ]
+    },
+    "intent_template_id": 247,
+    "old_task_id": 458
+  },
+  {
+    "sites": [
+      "shopping_admin"
+    ],
+    "task_id": 108,
+    "require_login": true,
+    "storage_state": "./.auth/shopping_admin_state.json",
+    "start_url": "http://localhost:8083/admin",
+    "geolocation": null,
+    "intent_template": "Update the product description of {{product}} to highlight the real user positive reviews by quoting the comments",
+    "instantiation_dict": {
+      "product": "Antonia Racer Tank"
+    },
+    "intent": "Update the product description of Antonia Racer Tank to highlight the real user positive reviews by quoting the comments",
+    "require_reset": false,
+    "eval": {
+      "eval_types": [
+        "program_html"
+      ],
+      "reference_answers": null,
+      "reference_url": "",
+      "program_html": [
+        {
+          "url": "http://localhost:8083/admin/../antonia-racer-tank.html",
+          "locator": "document.querySelector('.data.item.content').outerText + (document.querySelector('.product.attribute.overview [itemprop=\"description\"]')?.outerText || '')",
+          "required_contents": {
+            "must_include": [
+              "This is in regular rotation at the gym",
+              "Its colorful and looks kinda cute under my exercise tanks",
+              "it's very stylish for yoga or something else low impact"
+            ]
+          }
+        }
+      ]
+    },
+    "intent_template_id": 251,
+    "old_task_id": 464
+  },
+  {
+    "sites": [
+      "shopping_admin"
+    ],
+    "task_id": 110,
+    "require_login": true,
+    "storage_state": "./.auth/shopping_admin_state.json",
+    "start_url": "http://localhost:8083/admin",
+    "geolocation": null,
+    "intent_template": "Cancel order {{id}}",
+    "instantiation_dict": {
+      "id": "302"
+    },
+    "intent": "Cancel order 302",
+    "require_reset": false,
+    "eval": {
+      "eval_types": [
+        "program_html"
+      ],
+      "reference_answers": null,
+      "reference_url": "",
+      "program_html": [
+        {
+          "url": "http://localhost:8083/admin/sales/order/view/order_id/302/",
+          "locator": "document.querySelector(\"#order_status\").outerText",
+          "required_contents": {
+            "exact_match": "Canceled"
+          }
+        }
+      ]
+    },
+    "intent_template_id": 257,
+    "old_task_id": 470
+  },
+  {
+    "sites": [
+      "shopping_admin"
+    ],
+    "task_id": 113,
+    "require_login": true,
+    "storage_state": "./.auth/shopping_admin_state.json",
+    "start_url": "http://localhost:8083/admin",
+    "geolocation": null,
+    "intent_template": "Change the page title of \"{{old-heading}}\" page on my site to \"{{heading}}\".",
+    "instantiation_dict": {
+      "old-heading": "Home Page",
+      "heading": "This is the home page!! Leave here!!"
+    },
+    "intent": "Change the page title of \"Home Page\" page on my site to \"This is the home page!! Leave here!!\".",
+    "require_reset": false,
+    "eval": {
+      "eval_types": [
+        "program_html"
+      ],
+      "reference_answers": null,
+      "reference_url": "",
+      "program_html": [
+        {
+          "url": "http://localhost:8083/admin/cms/page/edit/page_id/2/",
+          "locator": "document.querySelector('input[name=\"title\"]').value",
+          "required_contents": {
+            "exact_match": "This is the home page!! Leave here!!"
+          }
+        }
+      ]
+    },
+    "intent_template_id": 275,
+    "old_task_id": 488
+  },
+  {
+    "sites": [
+      "shopping_admin"
+    ],
+    "task_id": 114,
+    "require_login": true,
+    "storage_state": "./.auth/shopping_admin_state.json",
+    "start_url": "http://localhost:8083/admin",
+    "geolocation": null,
+    "intent_template": "Notify {{name}} in their most recent pending order with message \"{{message}}\"",
+    "instantiation_dict": {
+      "name": "Sarah Miller",
+      "message": "the order is ready to be shipped soon!"
+    },
+    "intent": "Notify Sarah Miller in their most recent pending order with message \"the order is ready to be shipped soon!\"",
+    "require_reset": false,
+    "eval": {
+      "eval_types": [
+        "string_match"
+      ],
+      "reference_answers": {
+        "fuzzy_match": [
+          "N/A"
+        ]
+      },
+      "reference_url": "",
+      "program_html": [],
+      "string_note": "System message: We cannot add order history."
+    },
+    "intent_template_id": 280,
+    "old_task_id": 491
+  },
+  {
+    "sites": [
+      "shopping_admin"
+    ],
+    "task_id": 115,
+    "require_login": true,
+    "storage_state": "./.auth/shopping_admin_state.json",
+    "start_url": "http://localhost:8083/admin",
+    "geolocation": null,
+    "intent_template": "Update order #{{order}} with the {{service}} tracking number {{tracking}}",
+    "instantiation_dict": {
+      "tracking": "24353446464",
+      "order": "307",
+      "service": "DHL"
+    },
+    "intent": "Update order #307 with the DHL tracking number 24353446464",
+    "require_reset": false,
+    "eval": {
+      "eval_types": [
+        "program_html"
+      ],
+      "reference_answers": null,
+      "reference_url": "",
+      "program_html": [
+        {
+          "url": "http://localhost:8083/admin/sales/order/commentsHistory/order_id/307/active_tab/order_shipments/",
+          "locator": "",
+          "required_contents": {
+            "must_include": [
+              "Tracking number 24353446464 for DHL assigned"
+            ]
+          }
+        }
+      ]
+    },
+    "intent_template_id": 284,
+    "old_task_id": 497
+  },
+  {
+    "sites": [
+      "shopping_admin"
+    ],
+    "task_id": 116,
+    "require_login": true,
+    "storage_state": "./.auth/shopping_admin_state.json",
+    "start_url": "http://localhost:8083/admin",
+    "geolocation": null,
+    "intent_template": "Make all {{product}} as out of stock",
+    "instantiation_dict": {
+      "product": "Aeno capri"
+    },
+    "intent": "Make all Aeno capri as out of stock",
+    "require_reset": false,
+    "eval": {
+      "eval_types": [
+        "program_html"
+      ],
+      "reference_answers": null,
+      "reference_url": "",
+      "program_html": [
+        {
+          "url": "http://localhost:8083/admin/catalog/product/edit/id/1861/",
+          "locator": "document.querySelector('[name=\"product[quantity_and_stock_status][is_in_stock]\"').value",
+          "required_contents": {
+            "exact_match": "0"
+          }
+        }
+      ]
+    },
+    "intent_template_id": 287,
+    "old_task_id": 505
+  },
+  {
+    "sites": [
+      "shopping_admin"
+    ],
+    "task_id": 125,
+    "require_login": true,
+    "storage_state": "./.auth/shopping_admin_state.json",
+    "start_url": "http://localhost:8083/admin",
+    "geolocation": null,
+    "intent_template": "Modify the address of order #{{order_id}} to {{address}}",
+    "instantiation_dict": {
+      "order_id": "299",
+      "address": "456 Oak Avenue, New York, NY, 10001"
+    },
+    "intent": "Modify the address of order #299 to 456 Oak Avenue, New York, NY, 10001",
+    "require_reset": false,
+    "eval": {
+      "eval_types": [
+        "program_html"
+      ],
+      "reference_answers": null,
+      "reference_url": "",
+      "program_html": [
+        {
+          "url": "http://localhost:8083/admin/sales/order/view/order_id/299",
+          "locator": "",
+          "required_contents": {
+            "must_include": [
+              "456 Oak Avenue",
+              "New York",
+              "10001"
+            ]
+          }
+        }
+      ]
+    },
+    "intent_template_id": 240,
+    "old_task_id": 538
+  },
+  {
+    "sites": [
+      "shopping_admin"
+    ],
+    "task_id": 126,
+    "require_login": true,
+    "storage_state": "./.auth/shopping_admin_state.json",
+    "start_url": "http://localhost:8083/admin",
+    "geolocation": null,
+    "intent_template": "Add a new {{option}} {{value}} to {{base_setting}} of {{product}}",
+    "instantiation_dict": {
+      "option": "color",
+      "value": "blue",
+      "base_setting": "size S and M",
+      "product": "Frankie Sweatshirt"
+    },
+    "intent": "Add a new color blue to size S and M of Frankie Sweatshirt",
+    "require_reset": false,
+    "eval": {
+      "eval_types": [
+        "program_html"
+      ],
+      "reference_answers": null,
+      "reference_url": "",
+      "program_html": [
+        {
+          "url": "http://localhost:8083/admin/catalog/product/edit/id/110/",
+          "locator": "document.querySelector('[data-index=\"configurable\"').outerText",
+          "required_contents": {
+            "must_include": [
+              "Sweatshirt-M-Blue",
+              "Sweatshirt-S-Blue"
+            ]
+          }
+        }
+      ]
+    },
+    "intent_template_id": 252,
+    "old_task_id": 548
+  },
+  {
+    "sites": [
+      "shopping_admin"
+    ],
+    "task_id": 145,
+    "require_login": true,
+    "storage_state": "./.auth/shopping_admin_state.json",
+    "start_url": "http://localhost:8083/admin",
+    "geolocation": null,
+    "intent_template": "Lookup orders that are {{status}}",
+    "instantiation_dict": {
+      "status": "canceled"
+    },
+    "intent": "Lookup orders that are canceled",
+    "require_reset": false,
+    "eval": {
+      "eval_types": [
+        "url_match",
+        "program_html"
+      ],
+      "reference_answers": null,
+      "reference_url": "http://localhost:8083/admin/sales/order/",
+      "program_html": [
+        {
+          "url": "last",
+          "locator": "document.querySelector(\"div.admin__data-grid-filters-current\").outerText",
+          "required_contents": {
+            "must_include": [
+              "Canceled"
+            ]
+          }
+        }
+      ],
+      "url_note": "GOLD in PRED"
+    },
+    "intent_template_id": 253,
+    "old_task_id": 678
+  },
+  {
+    "sites": [
+      "shopping_admin"
+    ],
+    "task_id": 149,
+    "require_login": true,
+    "storage_state": "./.auth/shopping_admin_state.json",
+    "start_url": "http://localhost:8083/admin",
+    "geolocation": null,
+    "intent_template": "Today is 3/15/2023, generate a {{report}} {{time_span}}",
+    "instantiation_dict": {
+      "report": "sales order report",
+      "time_span": "for last month"
+    },
+    "intent": "Today is 3/15/2023, generate a sales order report for last month",
+    "require_reset": false,
+    "eval": {
+      "eval_types": [
+        "url_match",
+        "program_html"
+      ],
+      "reference_answers": null,
+      "reference_url": "http://localhost:8083/admin/reports/report_sales/sales",
+      "program_html": [
+        {
+          "url": "last",
+          "locator": "document.querySelector('[id=\"sales_report_from\"').value",
+          "required_contents": {
+            "exact_match": "2/1/23"
+          }
+        },
+        {
+          "url": "last",
+          "locator": "document.querySelector('[id=\"sales_report_to\"').value",
+          "required_contents": {
+            "exact_match": "2/28/23"
+          }
+        }
+      ],
+      "url_note": "GOLD in PRED"
+    },
+    "intent_template_id": 268,
+    "old_task_id": 704
+  },
+  {
+    "sites": [
+      "shopping_admin"
+    ],
+    "task_id": 150,
+    "require_login": true,
+    "storage_state": "./.auth/shopping_admin_state.json",
+    "start_url": "http://localhost:8083/admin",
+    "geolocation": null,
+    "intent_template": "Create a {{type}} report from {{start_date}} to {{end_date}}",
+    "instantiation_dict": {
+      "type": "shipping",
+      "start_date": "08/05/2022",
+      "end_date": "03/01/2023"
+    },
+    "intent": "Create a shipping report from 08/05/2022 to 03/01/2023",
+    "require_reset": false,
+    "eval": {
+      "eval_types": [
+        "url_match",
+        "program_html"
+      ],
+      "reference_answers": null,
+      "reference_url": "http://localhost:8083/admin/reports/report_sales/shipping",
+      "program_html": [
+        {
+          "url": "last",
+          "locator": "document.querySelector('[id=\"sales_report_from\"').value",
+          "required_contents": {
+            "exact_match": "8/5/22"
+          }
+        },
+        {
+          "url": "last",
+          "locator": "document.querySelector('[id=\"sales_report_to\"').value",
+          "required_contents": {
+            "exact_match": "3/1/23"
+          }
+        }
+      ],
+      "url_note": "GOLD in PRED"
+    },
+    "intent_template_id": 271,
+    "old_task_id": 710
+  },
+  {
+    "sites": [
+      "shopping_admin"
+    ],
+    "task_id": 160,
+    "require_login": true,
+    "storage_state": "./.auth/shopping_admin_state.json",
+    "start_url": "http://localhost:8083/admin",
+    "geolocation": null,
+    "intent_template": "{{quantity}} {{product}} arrived, update the stock",
+    "instantiation_dict": {
+      "quantity": "5",
+      "product": "blue Cronus yoga pants with size 33"
+    },
+    "intent": "5 blue Cronus yoga pants with size 33 arrived, update the stock",
+    "require_reset": false,
+    "eval": {
+      "eval_types": [
+        "program_html"
+      ],
+      "reference_answers": null,
+      "reference_url": "",
+      "program_html": [
+        {
+          "url": "http://localhost:8083/admin/catalog/product/edit/id/872/",
+          "locator": "document.querySelector('[name=\"product[quantity_and_stock_status][qty]\"').value",
+          "required_contents": {
+            "exact_match": "5"
+          }
+        },
+        {
+          "url": "http://localhost:8083/admin/catalog/product/edit/id/872/",
+          "locator": "document.querySelector('[name=\"product[quantity_and_stock_status][is_in_stock]\"').value",
+          "required_contents": {
+            "exact_match": "1"
+          }
+        }
+      ]
+    },
+    "intent_template_id": 241,
+    "old_task_id": 768
+  }
+]

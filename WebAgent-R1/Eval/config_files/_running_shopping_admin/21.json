@@ -2,33 +2,31 @@
   "sites": [
     "shopping_admin"
   ],
-  "task_id": 106,
+  "task_id": 114,
   "require_login": true,
   "storage_state": "./.auth/shopping_admin_state.json",
   "start_url": "http://localhost:8083/admin",
   "geolocation": null,
-  "intent_template": "Disable {{product}} from the site, they are facing some quality issues.",
+  "intent_template": "Notify {{name}} in their most recent pending order with message \"{{message}}\"",
   "instantiation_dict": {
-    "product": "Ryker Tee Crew Neck"
+    "name": "Sarah Miller",
+    "message": "the order is ready to be shipped soon!"
   },
-  "intent": "Disable Ryker Tee Crew Neck from the site, they are facing some quality issues.",
+  "intent": "Notify Sarah Miller in their most recent pending order with message \"the order is ready to be shipped soon!\"",
   "require_reset": false,
   "eval": {
     "eval_types": [
-      "program_html"
+      "string_match"
     ],
-    "reference_answers": null,
+    "reference_answers": {
+      "fuzzy_match": [
+        "N/A"
+      ]
+    },
     "reference_url": "",
-    "program_html": [
-      {
-        "url": "http://localhost:8083/admin/catalog/product/edit/id/478/",
-        "locator": "document.querySelector('[name=\"product[status]\"').value",
-        "required_contents": {
-          "exact_match": "2"
-        }
-      }
-    ]
+    "program_html": [],
+    "string_note": "System message: We cannot add order history."
   },
-  "intent_template_id": 242,
-  "old_task_id": 454
+  "intent_template_id": 280,
+  "old_task_id": 491
 }

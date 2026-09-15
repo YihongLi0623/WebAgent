@@ -2,16 +2,17 @@
   "sites": [
     "shopping_admin"
   ],
-  "task_id": 108,
+  "task_id": 125,
   "require_login": true,
   "storage_state": "./.auth/shopping_admin_state.json",
   "start_url": "http://localhost:8083/admin",
   "geolocation": null,
-  "intent_template": "Update the product description of {{product}} to highlight the real user positive reviews by quoting the comments",
+  "intent_template": "Modify the address of order #{{order_id}} to {{address}}",
   "instantiation_dict": {
-    "product": "Antonia Racer Tank"
+    "order_id": "299",
+    "address": "456 Oak Avenue, New York, NY, 10001"
   },
-  "intent": "Update the product description of Antonia Racer Tank to highlight the real user positive reviews by quoting the comments",
+  "intent": "Modify the address of order #299 to 456 Oak Avenue, New York, NY, 10001",
   "require_reset": false,
   "eval": {
     "eval_types": [
@@ -21,18 +22,18 @@
     "reference_url": "",
     "program_html": [
       {
-        "url": "http://localhost:8083/admin/../antonia-racer-tank.html",
-        "locator": "document.querySelector('.data.item.content').outerText + (document.querySelector('.product.attribute.overview [itemprop=\"description\"]')?.outerText || '')",
+        "url": "http://localhost:8083/admin/sales/order/view/order_id/299",
+        "locator": "",
         "required_contents": {
           "must_include": [
-            "This is in regular rotation at the gym",
-            "Its colorful and looks kinda cute under my exercise tanks",
-            "it's very stylish for yoga or something else low impact"
+            "456 Oak Avenue",
+            "New York",
+            "10001"
           ]
         }
       }
     ]
   },
-  "intent_template_id": 251,
-  "old_task_id": 464
+  "intent_template_id": 240,
+  "old_task_id": 538
 }

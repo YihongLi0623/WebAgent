@@ -2,17 +2,18 @@
   "sites": [
     "shopping_admin"
   ],
-  "task_id": 107,
+  "task_id": 115,
   "require_login": true,
   "storage_state": "./.auth/shopping_admin_state.json",
-  "start_url": "http://localhost:8083/admin/catalog/product/edit/id/1481/",
+  "start_url": "http://localhost:8083/admin",
   "geolocation": null,
-  "intent_template": "{{action}} the price of this product by {{amount}}",
+  "intent_template": "Update order #{{order}} with the {{service}} tracking number {{tracking}}",
   "instantiation_dict": {
-    "amount": "$5",
-    "action": "Reduce"
+    "tracking": "24353446464",
+    "order": "307",
+    "service": "DHL"
   },
-  "intent": "Reduce the price of this product by $5",
+  "intent": "Update order #307 with the DHL tracking number 24353446464",
   "require_reset": false,
   "eval": {
     "eval_types": [
@@ -22,14 +23,16 @@
     "reference_url": "",
     "program_html": [
       {
-        "url": "http://localhost:8083/admin/catalog/product/edit/id/1481/",
-        "locator": "document.querySelector('[name=\"product[price]\"').value",
+        "url": "http://localhost:8083/admin/sales/order/commentsHistory/order_id/307/active_tab/order_shipments/",
+        "locator": "",
         "required_contents": {
-          "exact_match": "27.00"
+          "must_include": [
+            "Tracking number 24353446464 for DHL assigned"
+          ]
         }
       }
     ]
   },
-  "intent_template_id": 247,
-  "old_task_id": 458
+  "intent_template_id": 284,
+  "old_task_id": 497
 }

@@ -91,11 +91,22 @@ PROVIDER="openai"
 MODEL="QUASAR-QAT/Qwen3.8-27B-QUASAR-NVFP4"
 MODE="chat"
 PLANNER_IP="https://inference.cluster.aimodelnetwork.cn/QUASAR-QAT/Qwen3.8-27B-QUASAR-NVFP4/v1"
-# 这个端点不校验鉴权，但 openai_utils.py 在 import 阶段就要读
-# os.environ["OPENAI_API_KEY"]，缺了直接 KeyError，所以必须给非空占位。
-# 走 planner_ip 时真正用的是 call_llm(api_key='EMPTY')，这里只是为了让进程能起来。
+# 这两个变量有两个用途，都别删：
+#   1) openai_utils.py 在 import 阶段就要读 os.environ["OPENAI_API_KEY"]，缺了直接 KeyError；
+#   2) **LLM 判分**。fuzzy_match / ua_match 这两种 eval 类型会调
+#      helper_functions.llm_fuzzy_match / llm_ua_match，它们**不经过 planner_ip**，
+#      而是独立走 OPENAI_API_KEY + OPENAI_API_URL（模型名见 JUDGE_MODEL）。
+#      所以这里把 OPENAI_API_URL 也指到同一个 vLLM 网关。
+#      留成 api.openai.com 的话，那 8 条 fuzzy_match 任务
+#      （task_id 26/27/30/48/51/59/80/114）会在判分阶段抛 APIConnectionError
+#      → 被 run.py 吞掉 → 不写分数、最后算"未跑"。
+# 想换回官方 GPT-4 判分（跟论文口径一致）:
+#   export OPENAI_API_URL=https://api.openai.com/v1 OPENAI_API_KEY=sk-xxx JUDGE_MODEL=gpt-4-1106-preview
 OPENAI_API_KEY="${OPENAI_API_KEY:-EMPTY}"
-OPENAI_API_URL="${OPENAI_API_URL:-https://api.openai.com/v1}"
+OPENAI_API_URL="${OPENAI_API_URL:-https://inference.cluster.aimodelnetwork.cn/QUASAR-QAT/Qwen3.8-27B-QUASAR-NVFP4/v1}"
+# 判分模型 / 判分最长输出（详见 evaluation_harness/helper_functions.py 里 JUDGE_* 的说明）
+export JUDGE_MODEL="${JUDGE_MODEL:-QUASAR-QAT/Qwen3.8-27B-QUASAR-NVFP4}"
+export JUDGE_MAX_TOKENS="${JUDGE_MAX_TOKENS:-2048}"
 
 # prompt 模板：必须与 MODE / 模型相匹配。
 # 这个模板的 system prompt 明确要求按
@@ -117,7 +128,7 @@ TASK_DIR="config_files/wa/test_webarena_lite_shopping_admin"         # 筛出来
 RESULT_DIR="eval_results/shopping_admin_qwen3.8-27b-quasar"
 
 LIMIT=0            # 只跑前 N 条（0=全部 35 条），试水用
-PARALLEL=4         # 并发 run.py 进程数。1=串行；4=把 35 条切成 4 段同时跑。
+PARALLEL=1         # 并发 run.py 进程数。1=串行；4=把 35 条切成 4 段同时跑。
                    # 命令行覆盖：PARALLEL=4 bash evaluate_shopping_admin.sh
                    # 参考：单实例 llama.cpp + 每进程一个 Chromium，4 左右比较稳；
                    #       调太大主要卡在模型推理排队和内存上。
@@ -167,6 +178,12 @@ export MAP="http://127.0.0.1:1"
 export HOMEPAGE="http://127.0.0.1:1"
 # openai_utils.py 在 import 阶段就读 OPENAI_API_KEY，缺了直接 KeyError
 export OPENAI_API_KEY OPENAI_API_URL
+# run.py 的逐步输出用的是 print()（比如 run.py:502 的 "Action String: <模型原始回复>"）。
+# 一旦 stdout 被管道接管（本脚本用 `| tee` 留日志），Python 会把 stdout 切成块缓冲：
+# 这些行要攒够 8KB 才吐一次。而 logger 和 tqdm 走 stderr 是逐行刷新的 ——
+# 于是就有了"进度条和 [Result] 实时出现，但部分任务看不到模型回复"的假象。
+# 关掉缓冲，逐步输出实时可见。
+export PYTHONUNBUFFERED=1
 
 # ---------- 计分模式 ----------
 if [[ $SCORE_ONLY -eq 1 ]]; then

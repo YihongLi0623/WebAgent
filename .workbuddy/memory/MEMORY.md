@@ -43,6 +43,18 @@
 - 评测模型最好**多探测一下再配**：先 `/v1/models` 确认 base_url 形态与精确 model id，
   再发一次最小 chat 请求看鉴权/是否 reasoning 模型/是否多模态。模型名常在 URL 路径里。
 
+## 判分（LLM-as-judge）—— 和 agent 模型是两套
+- 只有 `fuzzy_match` / `ua_match` 两种 eval 类型会调 LLM 判分：
+  `evaluation_harness/helper_functions.py` 的 `llm_fuzzy_match` / `llm_ua_match`，
+  **不经过 `--planner_ip`**，独立走 `OPENAI_API_URL` + `OPENAI_API_KEY` + `JUDGE_MODEL`。
+- 原代码写死 `model="gpt-4-1106-preview"`。已改成 `JUDGE_MODEL`（默认
+  `QUASAR-QAT/Qwen3.8-27B-QUASAR-NVFP4`）+ `JUDGE_MAX_TOKENS`（默认 2048），
+  `evaluate_shopping_admin.sh` 里 export 这两个并让 `OPENAI_API_URL` 指向同一个 vLLM 网关。
+- 判分 prompt 要求只输出 `correct`/`incorrect`/`partially correct`（ua_match 是
+  `same`/`different`），代码里有 `assert "correct" in response` —— 跑格式会让断言失败、
+  任务被吞掉不计分。实测该 Qwen 网关三种用例都按格式返回，且只用 60-80 tokens。
+- 判分失败会让任务**不写 score**（`actions/<id>.json` 停在 -0.1）→ 被算"未跑"而不是失败。
+
 ## 用户偏好
 - 交流要直接简洁；不要主动替用户跑长任务（本地环境也跑不了），
   用户会自己改脚本里的路径/参数后在 Linux 上跑。

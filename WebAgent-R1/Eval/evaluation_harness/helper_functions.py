@@ -578,9 +578,29 @@ def gitlab_get_project_memeber_role(
 
     return role
 
+# ---------------------------------------------------------------------------
+# LLM-as-judge 配置（只有 fuzzy_match / ua_match 这两种 eval 类型会用到）
+#
+# 注意：这两个函数是**独立**发起的一次 chat 调用，跟 agent 用哪个模型
+# （run.py --planner_ip）完全无关，走的是 OPENAI_API_KEY + OPENAI_API_URL。
+#
+# JUDGE_MODEL      判分模型。原来写死 "gpt-4-1106-preview"，现在默认指向
+#                  本地 vLLM 网关的 Qwen3.8-27B。想换回官方判分只要
+#                  export JUDGE_MODEL=gpt-4-1106-preview
+#                  + export OPENAI_API_URL=https://api.openai.com/v1
+# JUDGE_MAX_TOKENS 为什么要比原来的 768 大：这是个**思考模型**，思维链也占
+#                  completion token（实测判一次约用 165 tokens，其中 155 是
+#                  reasoning）。一旦 thinking 吃光预算，网关返回的 content 会是
+#                  None，紧接着的 .lower() 抛 AttributeError → 任务被 run.py 的
+#                  except Exception 吞掉、不计分。调大留足冗余。
+# ---------------------------------------------------------------------------
+JUDGE_MODEL = os.environ.get("JUDGE_MODEL", "QUASAR-QAT/Qwen3.8-27B-QUASAR-NVFP4")
+JUDGE_MAX_TOKENS = int(os.environ.get("JUDGE_MAX_TOKENS", "2048"))
+
+
 @beartype
 def llm_fuzzy_match(pred: str, reference: str, question: str) -> float:
-    """Check whether the prediction matches the reference with GPT-4-turbo"""
+    """Check whether the prediction matches the reference with an LLM judge"""
     messages: list[dict[str, Any]] = []
     # construct the question to ask
     message = "Help a teacher to grade the answer of a student given a question. Keep in mind that the student may use different phrasing or wording to answer the question. The goal is to evaluate whether the answer is semantically equivalent to the reference answer.\n"
@@ -598,10 +618,10 @@ def llm_fuzzy_match(pred: str, reference: str, question: str) -> float:
     logger.info(f'[P] {pred}')
 
     response = generate_from_openai_chat_completion(
-        model="gpt-4-1106-preview",  # gpt-4-1106-preview unavailable
+        model=JUDGE_MODEL,
         messages=messages,
         temperature=0,
-        max_tokens=768,
+        max_tokens=JUDGE_MAX_TOKENS,
         top_p=1.0,
         context_length=0,
         api_key=os.environ["OPENAI_API_KEY"],
@@ -635,10 +655,10 @@ def llm_ua_match(pred: str, reference: str, question: str) -> float:
     ]
 
     response = generate_from_openai_chat_completion(
-        model="gpt-4-1106-preview", # gpt-4-1106-preview not available
+        model=JUDGE_MODEL,
         messages=messages,
         temperature=0,
-        max_tokens=768,
+        max_tokens=JUDGE_MAX_TOKENS,
         top_p=1.0,
         context_length=0,
         api_key=os.environ["OPENAI_API_KEY"],

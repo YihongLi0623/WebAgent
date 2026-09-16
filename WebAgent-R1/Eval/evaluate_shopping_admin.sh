@@ -2,8 +2,8 @@
 # ==============================================================================
 # 只评测 shopping_admin 单个站点（WebAgent-R1 / Eval）
 #
-# 当前模型：llama.cpp 部署的 Llama-3.1-8B-Instruct
-#           http://219.222.20.79:31313/v1
+# 当前模型：vLLM 部署的 Qwen3.8-27B-QUASAR-NVFP4（多模态 + 思考模型）
+#           https://inference.cluster.aimodelnetwork.cn/QUASAR-QAT/Qwen3.8-27B-QUASAR-NVFP4/v1
 #
 # 它把四件原本分散的事串起来：
 #   1. 任务筛选    scripts/filter_tasks_by_site.py    ← 挑出 shopping_admin 任务并重新编号
@@ -56,54 +56,75 @@ SHOPPING_ADMIN_PORT=8083
 PYTHON="python"
 
 # ============================ 模型配置区 =====================================
-# 当前配置：llama.cpp 部署的 Meta-Llama-3.1-8B-Instruct
+# 当前配置：vLLM 部署的 Qwen3.8-27B-QUASAR-NVFP4（多模态 + 思考模型）
 #
-# llama.cpp 的 `llama-server` 自带 OpenAI 兼容接口，但**路径必须带 /v1**：
-#     http://219.222.20.79:31313/v1/chat/completions
-# 所以 PLANNER_IP 要写成 .../v1（代码里是 new OpenAI(base_url=...)，
-# 它会自己往后拼 /chat/completions）。
+# 端点实测（2026-09-16）：
+#   GET  <PLANNER_IP>/models            -> 200
+#        {"id":"QUASAR-QAT/Qwen3.8-27B-QUASAR-NVFP4","owned_by":"vllm","max_model_len":200000}
+#   POST <PLANNER_IP>/chat/completions  -> 200，且**不校验 Authorization**（带假 key 也是 200）
 #
-# MODEL 用服务端 /v1/models 报出来的 id，别自己拼：
-#     curl http://219.222.20.79:31313/v1/models
-# llama.cpp 通常忽略这个字段，但填对更稳。
+# 三个必须注意的点：
+#   1) base_url 要写到 /v1 为止，而且**模型名本身就是 URL 路径的一部分**：
+#        https://.../QUASAR-QAT/Qwen3.8-27B-QUASAR-NVFP4/v1
+#      实测 /QUASAR-QAT/.../models（少 /v1）和根路径 /v1/models 都返回 404。
+#      代码里是 OpenAI(base_url=PLANNER_IP)，它会自己往后拼 /chat/completions，
+#      所以 PLANNER_IP 末尾只到 /v1，不要再带 /chat/completions。
+#   2) MODEL 要写**带命名空间的完整 id**：QUASAR-QAT/Qwen3.8-27B-QUASAR-NVFP4。
+#      写短名 "Qwen3.8-27B-QUASAR-NVFP4" 会被网关拒：
+#        404 The model `Qwen3.8-27B-QUASAR-NVFP4` does not exist.
+#   3) 这是**思考模型**：服务端把思维链拆到独立的 reasoning 字段，content 里只剩答案
+#      （形如 "\n\n<answer>do(...)</answer>"）。Eval 侧只读
+#      response.choices[0].message.content（openai_utils.py:286），
+#      所以被拆出去的 reasoning 不会干扰动作解析 —— 正好合适。
+#      但思维链同样消耗 completion token，所以下面 MAX_TOKENS 提到了 4096；
+#      否则无障碍树稍大就会在 thinking 阶段被截断、拿不到 <answer> → 解析失败累积。
 #
-# provider 走 "openai"（openai 格式的兼容接口），不是 api_utils.py 里的 "api"。
+# 它同时是**多模态模型**（实测能正确读 image_url）。不过本评测走 WebAgent-R1 的
+# 文本协议（observation_type=webrl，读无障碍树），WebRLChatPromptConstructor
+# 只拼文本 obs、不送图，所以这里不需要也无法启用图像观测。
+#
+# provider 走 "openai"（OpenAI 兼容接口），不是 api_utils.py 里的 "api"。
 #
 # 备选：官方 / 第三方 OpenAI 兼容 API → PLANNER_IP="" 并填好下面两个变量
 #
 PROVIDER="openai"
-MODEL="Llama-3.1-8B-Instruct-Q8_0.gguf"
+MODEL="QUASAR-QAT/Qwen3.8-27B-QUASAR-NVFP4"
 MODE="chat"
-PLANNER_IP="http://219.222.20.79:31313/v1"
-# llama.cpp 不校验 API key，但 openai_utils.py 在 import 阶段就要读
+PLANNER_IP="https://inference.cluster.aimodelnetwork.cn/QUASAR-QAT/Qwen3.8-27B-QUASAR-NVFP4/v1"
+# 这个端点不校验鉴权，但 openai_utils.py 在 import 阶段就要读
 # os.environ["OPENAI_API_KEY"]，缺了直接 KeyError，所以必须给非空占位。
 # 走 planner_ip 时真正用的是 call_llm(api_key='EMPTY')，这里只是为了让进程能起来。
 OPENAI_API_KEY="${OPENAI_API_KEY:-EMPTY}"
 OPENAI_API_URL="${OPENAI_API_URL:-https://api.openai.com/v1}"
 
-# prompt 模板：必须与 MODE / 模型相匹配
-#   chat + thinking  : agent/prompts/jsons/p_webrl_chat_think.json   ← llama3.1 用这个
+# prompt 模板：必须与 MODE / 模型相匹配。
+# 这个模板的 system prompt 明确要求按
+#   <think> ... </think> 换行 <answer> ... </answer>
+# 的格式作答；服务端会把 <think> 段拆到 reasoning 字段、content 里只留 <answer>，
+# 而 WebRLChatPromptConstructor.extract_action() 正是"有 <answer> 就取标签内"，
+# 两边能对上。
+#   chat + thinking  : agent/prompts/jsons/p_webrl_chat_think.json   ← 当前用这个
 #   WebRL 纯文本风格 : agent/prompts/jsons/p_webrl.json  （配 MODE="completion"）
 INSTRUCTION_PATH="agent/prompts/jsons/p_webrl_chat_think.json"
-# llama3.1 的回合结束符就是 <|eot_id|>。
+# Qwen 系列的回合结束符是 <|im_end|>。
 # 注意 llms/utils.py:37 在 chat 模式下会把 stop_token 硬编码成 None 传下去，
 # 所以这里只在 MODE="completion" 时真正生效（chat 模式靠 EOS 停，不影响）。
-STOP_TOKEN="<|eot_id|>"
+STOP_TOKEN="<|im_end|>"
 
 # ============================ 运行配置区 =====================================
 TASK_SRC_DIR="config_files/wa/test_webarena_lite"                    # 165 条全集
 TASK_DIR="config_files/wa/test_webarena_lite_shopping_admin"         # 筛出来的目标集（0..34.json 连续编号，可直接给 run.py）
-RESULT_DIR="eval_results/shopping_admin_llama3.1-8b"
+RESULT_DIR="eval_results/shopping_admin_qwen3.8-27b-quasar"
 
 LIMIT=0            # 只跑前 N 条（0=全部 35 条），试水用
-PARALLEL=1         # 并发 run.py 进程数。1=串行；4=把 35 条切成 4 段同时跑。
+PARALLEL=4         # 并发 run.py 进程数。1=串行；4=把 35 条切成 4 段同时跑。
                    # 命令行覆盖：PARALLEL=4 bash evaluate_shopping_admin.sh
                    # 参考：单实例 llama.cpp + 每进程一个 Chromium，4 左右比较稳；
                    #       调太大主要卡在模型推理排队和内存上。
 REFRESH_AUTH=1     # 1=先刷新并验证 shopping_admin 登录
 MAX_STEPS=30
-TEMPERATURE=1.0
-MAX_TOKENS=2048
+TEMPERATURE=1.0    # 思考模型想更稳可以试 0.6（vLLM 对 Qwen3 思考模式的常用值）
+MAX_TOKENS=4096    # 思考 token 也算在里面，2048 容易被 thinking 吃光、答案被截断
 MAX_OBS_LENGTH=0
 VIEWPORT_WIDTH=1280
 VIEWPORT_HEIGHT=720
@@ -125,6 +146,10 @@ cd "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 say()  { echo -e "\033[1;34m[eval]\033[0m $*"; }
 warn() { echo -e "\033[1;33m[warn]\033[0m $*"; }
 die()  { echo -e "\033[1;31m[error]\033[0m $*" >&2; exit 1; }
+
+# set -e 下任何一步失败都会静默退出 —— 看不到是第几行、什么命令失败，也来不及计分。
+# 这个 trap 把失败位置和命令打出来；想知道完整执行轨迹可以 bash -x 运行本脚本。
+trap 'rc=$?; echo -e "\033[1;31m[error]\033[0m 第 $LINENO 行失败（退出码 $rc）: $BASH_COMMAND" >&2' ERR
 
 SCORE_ONLY=0
 [[ "${1:-}" == "--score-only" ]] && SCORE_ONLY=1
@@ -194,7 +219,9 @@ if [[ ! -d "$TASK_DIR" ]]; then
   "$PYTHON" scripts/filter_tasks_by_site.py --src "$TASK_SRC_DIR" --dst "$TASK_DIR" \
     --site "$SITE" --host "$PUBLIC_HOSTNAME"
 else
-  n=$(ls -1 "$TASK_DIR"/*.json 2>/dev/null | wc -l)
+  # 注意 `|| true` 不能写成 `|| echo 0`：ls 失败时 wc 已经输出了 0，再 echo 一个 0
+  # 会变成 "0\n0"，后面 `[[ -gt ]]` 直接语法报错。
+  n=$(ls -1 "$TASK_DIR"/*.json 2>/dev/null | wc -l || true)
   say "复用已有任务目录 $TASK_DIR（$n 条）"
 fi
 
@@ -209,7 +236,7 @@ if [[ "$FRESH_RUN" == "1" && -d "$RESULT_DIR" ]]; then
   warn "旧结果已备份到 $backup（不需要就自己删）"
 fi
 
-total=$(ls -1 "$TASK_DIR"/*.json 2>/dev/null | wc -l || echo 0)
+total=$(ls -1 "$TASK_DIR"/*.json 2>/dev/null | wc -l || true)
 [[ "$total" -gt 0 ]] || die "任务目录里没有任务: $TASK_DIR"
 if [[ "$LIMIT" -gt 0 && "$LIMIT" -lt "$total" ]]; then
   warn "LIMIT=$LIMIT，本次只跑前 $LIMIT 条（不是完整 35 条）"
@@ -291,8 +318,14 @@ START_TS=$SECONDS
 #   python run.py --test_start_idx <段起> --test_end_idx <段止>
 # 写的是同一个 result_dir，但每个任务的结果文件是 actions/<内部task_id>.json，
 # 各段任务不重叠，所以互不干扰。
+#
+# 这里刻意用 `|| RUN_OK=0` 接住失败，而不是让 set -e 直接退出：
+# run.py 只要有一个任务抛出未捕获异常（模型报错、登录断言失败、页面超时…）
+# 就会以非零码结束。放任 set -e 生效的话，脚本会在这一行**静默退出** ——
+# 既不打印原因，也跳过后面的计分（就是上一轮"跑完没评分"的那个现象）。
+RUN_OK=1
 if [[ "$PARALLEL" -le 1 ]]; then
-  run_chunk 0 "$total"
+  run_chunk 0 "$total" 2>&1 | tee "logs/run_$(date +%Y%m%d-%H%M%S).log" || RUN_OK=0
 else
   # 注意 1：多个 run.py 进程共用一个 result_dir。它们在启动时各自会调一次
   # get_unfinished()（在 import + prepare 之后），此刻目录还是空的，所以都能拿到
@@ -310,19 +343,46 @@ else
     run_chunk "$s" "$e" >"logs/chunk_${i}.log" 2>&1 &
     pids+=($!)
   done
-  status=0
+  RUN_OK=0
   for pid in "${pids[@]}"; do
-    wait "$pid" || status=1
+    wait "$pid" || RUN_OK=1
   done
-  [[ $status -eq 0 ]] || warn "有进程非正常退出，失败的任务看 logs/chunk_*.log 和 $RESULT_DIR/error.txt"
 fi
 
 say "结束时间: $(date '+%Y-%m-%d %H:%M:%S')   总耗时 $((SECONDS - START_TS)) 秒"
 say "（想提速就把 PARALLEL 调大：PARALLEL=4 bash $(basename "$0")）"
 
+# ---------- 4.5 跑完先体检，再计分 ----------
+done_n=$(ls -1 "$RESULT_DIR"/actions/*.json 2>/dev/null | wc -l || true)
+say "已写出结果文件: ${done_n:-0} / $total 条（目录 $RESULT_DIR/actions/）"
+if [[ "$RUN_OK" -ne 0 ]]; then
+  warn "run.py 非零退出，说明并非所有任务都正常跑完。先看下面的线索，然后照样计分："
+fi
+if [[ "${done_n:-0}" -lt "$total" ]]; then
+  warn "结果文件少于任务数，常见原因见下面日志："
+  if [[ -f "$RESULT_DIR/error.txt" ]]; then
+    warn "=== $RESULT_DIR/error.txt 末尾 30 行 ==="
+    tail -n 30 "$RESULT_DIR/error.txt"
+  fi
+  if [[ "$PARALLEL" -gt 1 ]]; then
+    for f in logs/chunk_*.log; do
+      [[ -f "$f" ]] || continue
+      warn "=== $f 末尾 10 行 ==="
+      tail -n 10 "$f"
+    done
+  fi
+  warn "若日志是登录失败/断言错误 → 检查 PYTHON 与 PATH 里的 python 是否同一环境；"
+  warn "若日志是模型 4xx/超时 → 核对顶部模型配置区的 PLANNER_IP 与 MODEL 写法。"
+fi
+
 # ---------- 5. 计分 ----------
+# 计分无条件执行：即使上面有任务失败，也先把已完成部分的准确率算出来。
 echo
-"$PYTHON" scripts/score_subset.py --result_dir "$RESULT_DIR" --task_dir "$TASK_DIR" --show-failed
+SCORE_RC=0
+"$PYTHON" scripts/score_subset.py --result_dir "$RESULT_DIR" --task_dir "$TASK_DIR" --show-failed || SCORE_RC=$?
+if [[ $SCORE_RC -ne 0 ]]; then
+  warn "计分脚本返回 $SCORE_RC（最常见是「还没有完成任何任务」，即没有一条任务跑成功）"
+fi
 
 cat <<EOF
 

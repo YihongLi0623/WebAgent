@@ -184,3 +184,9 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+#debug info
+WebAgent-R1/Eval/debug_info/
+
+#authorization
+WebAgent-R1/Eval/.auth/

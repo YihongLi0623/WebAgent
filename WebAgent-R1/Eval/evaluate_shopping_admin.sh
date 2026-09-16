@@ -30,7 +30,7 @@
 # 用法:
 #   bash evaluate_shopping_admin.sh              # 完整跑 35 条（每次都是全量）
 #   LIMIT=3 bash evaluate_shopping_admin.sh      # 只跑前 3 条试水
-#   PARALLEL=2 bash evaluate_shopping_admin.sh   # 2 个进程并行
+#   d   # 2 个进程并行
 #   FRESH_RUN=0 bash evaluate_shopping_admin.sh  # 保留上次结果（会被 run.py 跳过部分任务）
 #   REFRESH_AUTH=0 bash evaluate_shopping_admin.sh   # 跳过登录刷新与验证
 #   bash evaluate_shopping_admin.sh --score-only # 只重新计分，不跑任务
